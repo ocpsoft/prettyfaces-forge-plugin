@@ -35,11 +35,12 @@ import org.jboss.seam.forge.shell.ShellPrompt;
 import org.jboss.seam.forge.shell.plugins.Alias;
 import org.jboss.seam.forge.shell.plugins.RequiresFacet;
 import org.jboss.seam.forge.spec.servlet.ServletFacet;
+import org.jboss.shrinkwrap.descriptor.api.DescriptorImporter;
+import org.jboss.shrinkwrap.descriptor.api.Descriptors;
 import org.jboss.shrinkwrap.descriptor.api.spec.servlet.web.FilterDef;
 import org.jboss.shrinkwrap.descriptor.api.spec.servlet.web.FilterMappingDef;
 
 import com.ocpsoft.forge.prettyfaces.config.PrettyFacesConfig;
-import com.ocpsoft.pretty.PrettyFilter;
 
 /**
  * @author <a href="mailto:lincolnbaxter@gmail.com">Lincoln Baxter, III</a>
@@ -63,8 +64,7 @@ public class PrettyFacesFacet extends BaseFacet
 
       dep = prompt.promptChoiceTyped("Install which version?", deps.resolveAvailableVersions(dep));
 
-      FileResource<?> prettyConfig = getProject().getFacet(WebResourceFacet.class)
-               .getWebResource("WEB-INF/pretty-config.xml");
+      FileResource<?> prettyConfig = getConfigFile();
 
       if (!prettyConfig.exists())
       {
@@ -81,13 +81,19 @@ public class PrettyFacesFacet extends BaseFacet
          if (version != null && version.trim().startsWith("2"))
          {
             // servlet version does not support auto-registration of the filter. do it for them
-            FilterDef filter = servlet.getConfig().filter(PrettyFilter.class);
+            FilterDef filter = servlet.getConfig().filter("com.ocpsoft.pretty.PrettyFilter");
             FilterMappingDef mappingDef = filter.asyncSupported(true).mapping().dispatchTypes(DispatcherType.values());
             servlet.saveConfig(mappingDef);
          }
       }
 
       return true;
+   }
+
+   public FileResource<?> getConfigFile()
+   {
+      return getProject().getFacet(WebResourceFacet.class)
+               .getWebResource("WEB-INF/pretty-config.xml");
    }
 
    @Override
@@ -105,6 +111,18 @@ public class PrettyFacesFacet extends BaseFacet
          }
       }
       return false;
+   }
+
+   public PrettyFacesConfig getConfig()
+   {
+      DescriptorImporter<PrettyFacesConfig> importer = Descriptors.importAs(PrettyFacesConfig.class);
+      PrettyFacesConfig config = importer.from(getConfigFile().getResourceInputStream());
+      return config;
+   }
+
+   public void saveConfig(PrettyFacesConfig config)
+   {
+      getConfigFile().setContents(config.exportAsString());
    }
 
 }

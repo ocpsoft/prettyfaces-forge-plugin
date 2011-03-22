@@ -51,7 +51,8 @@ public class PrettyFacesPlugin implements Plugin
       {
          installFacets.fire(new InstallFacets(PrettyFacesFacet.class));
       }
-      ShellMessages.success(out, "PrettyFaces is configured.");
+      if (project.hasFacet(PrettyFacesFacet.class))
+         ShellMessages.success(out, "PrettyFaces is configured.");
    }
 
    @Command("mapping-add")
