@@ -13,8 +13,10 @@ import org.jboss.seam.forge.shell.plugins.Command;
 import org.jboss.seam.forge.shell.plugins.DefaultCommand;
 import org.jboss.seam.forge.shell.plugins.PipeOut;
 import org.jboss.seam.forge.shell.plugins.Plugin;
+import org.jboss.seam.forge.shell.plugins.RequiresProject;
 
 @Alias("prettyfaces")
+@RequiresProject
 public class PrettyFacesPlugin implements Plugin
 {
    public static final Dependency PF_JSF2 = DependencyBuilder.create("com.ocpsoft:prettyfaces-jsf2");
@@ -55,8 +57,20 @@ public class PrettyFacesPlugin implements Plugin
          ShellMessages.success(out, "PrettyFaces is configured.");
    }
 
-   @Command("mapping-add")
-   public void mappingAdd(PipeOut out)
+   @Command("map-url")
+   public void mapUrl(PipeOut out)
+   {
+      throw new RuntimeException("Not yet implemented.");
+   }
+
+   @Command("list-mappings")
+   public void listMappings(PipeOut out)
+   {
+      throw new RuntimeException("Not yet implemented.");
+   }
+
+   @Command("list-patterns")
+   public void listPatterns(PipeOut out)
    {
       throw new RuntimeException("Not yet implemented.");
    }
