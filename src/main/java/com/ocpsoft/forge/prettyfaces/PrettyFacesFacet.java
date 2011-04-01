@@ -21,26 +21,35 @@
  */
 package com.ocpsoft.forge.prettyfaces;
 
+import java.io.IOException;
 import java.util.Arrays;
+import java.util.List;
 
 import javax.inject.Inject;
 import javax.servlet.DispatcherType;
 
+import org.jboss.seam.forge.parser.xml.XMLParser;
 import org.jboss.seam.forge.project.dependencies.Dependency;
+import org.jboss.seam.forge.project.dependencies.DependencyResolver;
 import org.jboss.seam.forge.project.facets.BaseFacet;
 import org.jboss.seam.forge.project.facets.DependencyFacet;
 import org.jboss.seam.forge.project.facets.WebResourceFacet;
 import org.jboss.seam.forge.resources.FileResource;
+import org.jboss.seam.forge.shell.ShellPrintWriter;
 import org.jboss.seam.forge.shell.ShellPrompt;
 import org.jboss.seam.forge.shell.plugins.Alias;
 import org.jboss.seam.forge.shell.plugins.RequiresFacet;
 import org.jboss.seam.forge.spec.servlet.ServletFacet;
-import org.jboss.shrinkwrap.descriptor.api.DescriptorImporter;
-import org.jboss.shrinkwrap.descriptor.api.Descriptors;
+import org.jboss.shrinkwrap.descriptor.api.Node;
 import org.jboss.shrinkwrap.descriptor.api.spec.servlet.web.FilterDef;
 import org.jboss.shrinkwrap.descriptor.api.spec.servlet.web.FilterMappingDef;
+import org.xml.sax.SAXException;
 
-import com.ocpsoft.forge.prettyfaces.config.PrettyFacesConfig;
+import com.ocpsoft.pretty.PrettyFilter;
+import com.ocpsoft.pretty.faces.config.DigesterPrettyConfigParser;
+import com.ocpsoft.pretty.faces.config.PrettyConfig;
+import com.ocpsoft.pretty.faces.config.PrettyConfigBuilder;
+import com.ocpsoft.pretty.faces.config.PrettyConfigParser;
 
 /**
  * @author <a href="mailto:lincolnbaxter@gmail.com">Lincoln Baxter, III</a>
@@ -51,39 +60,53 @@ import com.ocpsoft.forge.prettyfaces.config.PrettyFacesConfig;
 public class PrettyFacesFacet extends BaseFacet
 {
    @Inject
-   public ShellPrompt prompt;
+   private ShellPrompt prompt;
+   @Inject
+   private ShellPrintWriter writer;
+
+   @Inject
+   private DependencyResolver resolver;
 
    @Override
    public boolean install()
    {
       DependencyFacet deps = getProject().getFacet(DependencyFacet.class);
 
-      Dependency dep = prompt.promptChoiceTyped("Install which branch of PrettyFaces?",
-               Arrays.asList(PrettyFacesPlugin.PF_JSF11, PrettyFacesPlugin.PF_JSF12, PrettyFacesPlugin.PF_JSF2),
-               PrettyFacesPlugin.PF_JSF2);
+      writer.println();
+      PrettyFacesBranch branch = prompt.promptChoiceTyped("Install PrettyFaces for which technology?",
+               Arrays.asList(PrettyFacesBranch.values()), PrettyFacesBranch.SERVLET_3);
 
-      dep = prompt.promptChoiceTyped("Install which version?", deps.resolveAvailableVersions(dep));
+      List<Dependency> versions = resolver.resolveVersions(branch.getDependency());
+      Dependency dep = prompt.promptChoiceTyped("Install which version?",
+               versions, versions.isEmpty() ? null : versions.get(versions.size() - 1));
 
       FileResource<?> prettyConfig = getConfigFile();
 
       if (!prettyConfig.exists())
       {
          prettyConfig.createNewFile();
-         prettyConfig.setContents(new PrettyFacesConfig(dep.getVersion()).exportAsString());
+         prettyConfig.setContents(XMLParser.toXMLString(newConfig(dep.getVersion())));
       }
 
+      Dependency existing = deps.getDependency(dep);
+      if (existing != null
+               && prompt.promptBoolean("Existing PrettyFaces dependency was found. Replace [" + existing + "] with ["
+                        + dep + "]?"))
+      {
+         deps.removeDependency(existing);
+      }
       deps.addDependency(dep);
 
       if (project.hasFacet(ServletFacet.class))
       {
-         ServletFacet servlet = project.getFacet(ServletFacet.class);
-         String version = servlet.getConfig().getVersion();
-         if (version != null && version.trim().startsWith("2"))
+         ServletFacet servletFacet = project.getFacet(ServletFacet.class);
+         String servlet = servletFacet.getConfig().getVersion();
+         if (servlet != null && servlet.trim().startsWith("2"))
          {
             // servlet version does not support auto-registration of the filter. do it for them
-            FilterDef filter = servlet.getConfig().filter("com.ocpsoft.pretty.PrettyFilter");
+            FilterDef filter = servletFacet.getConfig().filter(PrettyFilter.class);
             FilterMappingDef mappingDef = filter.asyncSupported(true).mapping().dispatchTypes(DispatcherType.values());
-            servlet.saveConfig(mappingDef);
+            servletFacet.saveConfig(mappingDef);
          }
       }
 
@@ -100,29 +123,45 @@ public class PrettyFacesFacet extends BaseFacet
    @SuppressWarnings("unchecked")
    public boolean isInstalled()
    {
-      if (getProject().hasAllFacets(Arrays.asList(WebResourceFacet.class, ServletFacet.class)))
+      DependencyFacet deps = getProject().getFacet(DependencyFacet.class);
+      if (getProject().hasAllFacets(Arrays.asList(WebResourceFacet.class, ServletFacet.class))
+               && getConfigFile().exists())
       {
-         DependencyFacet deps = getProject().getFacet(DependencyFacet.class);
-         if (deps.hasDependency(PrettyFacesPlugin.PF_JSF11)
-                  || deps.hasDependency(PrettyFacesPlugin.PF_JSF12)
-                  || deps.hasDependency(PrettyFacesPlugin.PF_JSF2))
+         for (PrettyFacesBranch version : PrettyFacesBranch.values())
          {
-            return true;
+            if (deps.hasDependency(version.getDependency()))
+            {
+               return true;
+            }
          }
       }
       return false;
    }
 
-   public PrettyFacesConfig getConfig()
+   public Node getConfig()
    {
-      DescriptorImporter<PrettyFacesConfig> importer = Descriptors.importAs(PrettyFacesConfig.class);
-      PrettyFacesConfig config = importer.from(getConfigFile().getResourceInputStream());
-      return config;
+      return XMLParser.parse(getConfigFile().getResourceInputStream());
    }
 
-   public void saveConfig(PrettyFacesConfig config)
+   public void saveConfig(Node config)
    {
-      getConfigFile().setContents(config.exportAsString());
+      getConfigFile().setContents(XMLParser.toXMLInputStream(config));
    }
 
+   public PrettyConfig getPrettyConfig() throws IOException, SAXException
+   {
+      PrettyConfigBuilder builder = new PrettyConfigBuilder();
+      PrettyConfigParser parser = new DigesterPrettyConfigParser();
+      parser.parse(builder, getConfigFile().getResourceInputStream());
+      return builder.build();
+   }
+
+   public Node newConfig(String version)
+   {
+      return new Node("pretty-config")
+               .attribute("xmlns", "http://ocpsoft.com/prettyfaces/" + version)
+               .attribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance")
+               .attribute("xsi:schemaLocation", "http://ocpsoft.com/prettyfaces/" + version + " " +
+                        "http://ocpsoft.com/xml/ns/prettyfaces/ocpsoft-pretty-faces-" + version + ".xsd");
+   }
 }

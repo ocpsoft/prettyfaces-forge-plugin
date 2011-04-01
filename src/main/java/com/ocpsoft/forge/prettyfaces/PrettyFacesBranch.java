@@ -19,41 +19,39 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package com.ocpsoft.forge.prettyfaces.config;
+package com.ocpsoft.forge.prettyfaces;
 
-import org.jboss.shrinkwrap.descriptor.api.Node;
-import org.jboss.shrinkwrap.descriptor.impl.base.NodeProviderImplBase;
-import org.jboss.shrinkwrap.descriptor.impl.base.XMLExporter;
-import org.jboss.shrinkwrap.descriptor.spi.DescriptorExporter;
+import org.jboss.seam.forge.project.dependencies.Dependency;
+import org.jboss.seam.forge.project.dependencies.DependencyBuilder;
 
 /**
  * @author <a href="mailto:lincolnbaxter@gmail.com">Lincoln Baxter, III</a>
  * 
  */
-public class PrettyFacesConfig extends NodeProviderImplBase
+public enum PrettyFacesBranch
 {
-   private final Node root;
+   JSF_1_1("JSF 1.1 and Servlet <= 2.3", DependencyBuilder.create("com.ocpsoft:prettyfaces-jsf11")),
+   JSF_1_2("JSF 1.2 and Servlet >= 2.4", DependencyBuilder.create("com.ocpsoft:prettyfaces-jsf12")),
+   JSF_2_0("JSF 2.0 and Servlet >= 2.5", DependencyBuilder.create("com.ocpsoft:prettyfaces-jsf2")),
+   SERVLET_3("Java EE 6 and Servlet >= 3.0", DependencyBuilder.create("com.ocpsoft:prettyfaces-jsf2"));
 
-   public PrettyFacesConfig(String version)
+   private Dependency dependency;
+   private String name;
+
+   private PrettyFacesBranch(String name, Dependency dep)
    {
-      super("prettyfaces");
-      this.root = new Node("pretty-config")
-               .attribute("xmlns", "http://ocpsoft.com/prettyfaces/" + version)
-               .attribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance")
-               .attribute("xsi:schemaLocation", "http://ocpsoft.com/prettyfaces/" + version + " " +
-                        "http://ocpsoft.com/xml/ns/prettyfaces/ocpsoft-pretty-faces-" + version + ".xsd");
+      this.name = name;
+      this.dependency = dep;
+   }
+
+   public Dependency getDependency()
+   {
+      return dependency;
    }
 
    @Override
-   public Node getRootNode()
+   public String toString()
    {
-      return root;
+      return name;
    }
-
-   @Override
-   protected DescriptorExporter getExporter()
-   {
-      return new XMLExporter();
-   }
-
 }
