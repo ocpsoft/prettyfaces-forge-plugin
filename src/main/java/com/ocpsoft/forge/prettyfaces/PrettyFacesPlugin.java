@@ -255,7 +255,7 @@ public class PrettyFacesPlugin implements Plugin
 
    }
 
-   @Command("add-mapping")
+   @Command("mapping")
    public void mapUrl(
             PipeOut out,
             @Option(name = "pattern", description = "the URL pattern", required = true) String pattern,

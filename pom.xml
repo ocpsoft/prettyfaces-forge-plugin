@@ -3,12 +3,22 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
 	xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>com.ocpsoft</groupId>
+		<artifactId>ocpsoft-parent</artifactId>
+		<version>1</version>
+	</parent>
+
+	<name>PrettyFaces Forge Plugin</name>
 	<groupId>com.ocpsoft.forge</groupId>
 	<artifactId>prettyfaces-plugin</artifactId>
 	<version>1.0.0.Alpha1</version>
+
 	<properties>
 		<forge.api.version>1.0.0.Alpha3</forge.api.version>
 	</properties>
+
 	<dependencies>
 		<dependency>
 			<groupId>com.ocpsoft</groupId>
@@ -28,12 +38,14 @@
 			<scope>provided</scope>
 		</dependency>
 	</dependencies>
+
 	<repositories>
 		<repository>
 			<id>JBOSS_NEXUS</id>
 			<url>http://repository.jboss.org/nexus/content/groups/public</url>
 		</repository>
 	</repositories>
+
 	<build>
 		<plugins>
 			<plugin>
