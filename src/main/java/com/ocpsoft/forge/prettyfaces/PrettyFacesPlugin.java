@@ -23,7 +23,7 @@ import org.jboss.seam.forge.shell.plugins.Option;
 import org.jboss.seam.forge.shell.plugins.PipeOut;
 import org.jboss.seam.forge.shell.plugins.Plugin;
 import org.jboss.seam.forge.shell.plugins.RequiresProject;
-import org.jboss.seam.forge.spec.jsf.FacesFacet;
+import org.jboss.seam.forge.spec.javaee6.jsf.FacesFacet;
 import org.jboss.shrinkwrap.descriptor.api.Node;
 import org.jboss.shrinkwrap.descriptor.impl.base.Strings;
 import org.xml.sax.SAXException;
