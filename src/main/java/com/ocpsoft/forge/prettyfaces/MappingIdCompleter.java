@@ -38,8 +38,13 @@ import com.ocpsoft.pretty.faces.config.mapping.UrlMapping;
  */
 public class MappingIdCompleter extends SimpleTokenCompleter
 {
+   private final Project project;
+
    @Inject
-   private Project project;
+   public MappingIdCompleter(Project project)
+   {
+      this.project = project;
+   }
 
    @Override
    public List<Object> getCompletionTokens()
