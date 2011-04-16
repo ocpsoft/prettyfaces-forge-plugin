@@ -118,6 +118,7 @@ public class PrettyFacesPluginTest extends AbstractShellTest
       FileResource<?> child = (FileResource<?>) web.getWebRootDirectory().getChild("index.xhtml");
       child.createNewFile();
 
+      queueInputLines("2");
       plugin.autoMap(child.getName());
 
       PrettyFacesFacet pf = project.getFacet(PrettyFacesFacet.class);
@@ -128,7 +129,7 @@ public class PrettyFacesPluginTest extends AbstractShellTest
 
       assertEquals("index", m.getId());
       assertEquals("/", m.getPattern());
-      assertEquals("/index.jsf", m.getViewId());
+      assertEquals("/faces/index.xhtml", m.getViewId());
    }
 
    @Test
@@ -148,7 +149,7 @@ public class PrettyFacesPluginTest extends AbstractShellTest
       resources.add(child);
       resources.add(child2);
 
-      queueInputLines("1", "", "2", "", "");
+      queueInputLines("1", "1", "1", "1");
       event.fire(new ScaffoldGeneratedResources(new MockScaffoldProvider(project.getFacet(FacesFacet.class)), resources));
 
       PrettyFacesFacet pf = project.getFacet(PrettyFacesFacet.class);

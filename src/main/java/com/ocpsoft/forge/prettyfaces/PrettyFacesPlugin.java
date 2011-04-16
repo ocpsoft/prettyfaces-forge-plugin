@@ -220,6 +220,10 @@ public class PrettyFacesPlugin implements Plugin
             @Option(name = "resource", completer = ViewIdCompleter.class, description = "the server resource to be displayed", required = true) String viewId)
             throws IOException, SAXException
    {
+      if (!viewId.startsWith("/"))
+      {
+         viewId = "/" + viewId;
+      }
       // Attempt to convert the view resource into a faces resource
       if (project.hasFacet(FacesFacet.class))
       {
