@@ -45,6 +45,7 @@ import org.jboss.shrinkwrap.descriptor.api.spec.servlet.web.FilterDef;
 import org.jboss.shrinkwrap.descriptor.api.spec.servlet.web.FilterMappingDef;
 import org.xml.sax.SAXException;
 
+import com.ocpsoft.pretty.PrettyException;
 import com.ocpsoft.pretty.PrettyFilter;
 import com.ocpsoft.pretty.faces.config.DigesterPrettyConfigParser;
 import com.ocpsoft.pretty.faces.config.PrettyConfig;
@@ -148,12 +149,23 @@ public class PrettyFacesFacet extends BaseFacet
       getConfigFile().setContents(XMLParser.toXMLInputStream(config));
    }
 
-   public PrettyConfig getPrettyConfig() throws IOException, SAXException
+   public PrettyConfig getPrettyConfig()
    {
-      PrettyConfigBuilder builder = new PrettyConfigBuilder();
-      PrettyConfigParser parser = new DigesterPrettyConfigParser();
-      parser.parse(builder, getConfigFile().getResourceInputStream());
-      return builder.build();
+      try
+      {
+         PrettyConfigBuilder builder = new PrettyConfigBuilder();
+         PrettyConfigParser parser = new DigesterPrettyConfigParser();
+         parser.parse(builder, getConfigFile().getResourceInputStream());
+         return builder.build();
+      }
+      catch (IOException e)
+      {
+         throw new PrettyException(e);
+      }
+      catch (SAXException e)
+      {
+         throw new PrettyException(e);
+      }
    }
 
    public Node newConfig(String version)

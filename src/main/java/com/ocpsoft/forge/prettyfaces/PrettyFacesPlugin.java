@@ -4,7 +4,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -22,10 +24,10 @@ import org.jboss.seam.forge.resources.Resource;
 import org.jboss.seam.forge.resources.ResourceFilter;
 import org.jboss.seam.forge.scaffold.AccessStrategy;
 import org.jboss.seam.forge.scaffold.plugins.events.ScaffoldGeneratedResources;
-import org.jboss.seam.forge.shell.Shell;
 import org.jboss.seam.forge.shell.ShellColor;
 import org.jboss.seam.forge.shell.ShellMessages;
 import org.jboss.seam.forge.shell.ShellPrintWriter;
+import org.jboss.seam.forge.shell.ShellPrompt;
 import org.jboss.seam.forge.shell.events.InstallFacets;
 import org.jboss.seam.forge.shell.plugins.Alias;
 import org.jboss.seam.forge.shell.plugins.Command;
@@ -52,16 +54,19 @@ import com.ocpsoft.pretty.faces.url.URLPatternParser;
 @Alias("prettyfaces")
 public class PrettyFacesPlugin implements Plugin
 {
+   private static final AutomapTarget CUSTOM_MAPPING = new AutomapTarget("custom", "?", null);
    private final Project project;
    private final Event<InstallFacets> installFacets;
    private final ShellPrintWriter out;
+   private final ShellPrompt prompt;
 
    @Inject
-   public PrettyFacesPlugin(Project project, Event<InstallFacets> event, ShellPrintWriter writer)
+   public PrettyFacesPlugin(Project project, Event<InstallFacets> event, ShellPrintWriter writer, ShellPrompt prompt)
    {
       this.project = project;
       this.installFacets = event;
       this.out = writer;
+      this.prompt = prompt;
    }
 
    @DefaultCommand
@@ -77,71 +82,137 @@ public class PrettyFacesPlugin implements Plugin
       }
    }
 
-   public void handleScaffoldGeneration(@Observes ScaffoldGeneratedResources event, Shell shell)
+   public void handleScaffoldGeneration(@Observes ScaffoldGeneratedResources event)
    {
       if (project.hasFacet(PrettyFacesFacet.class))
       {
+         WebResourceFacet web = project.getFacet(WebResourceFacet.class);
+
          List<Resource<?>> resources = event.getResources();
          AccessStrategy strategy = event.getProvider().getAccessStrategy(project);
-         ShellMessages.info(shell, "PrettyFaces detected generated Resources:");
-         List<String> paths = new ArrayList<String>();
+
+         List<ResourceMappingRequest> resourceRequests = new ArrayList<ResourceMappingRequest>();
          for (Resource<?> resource : resources)
          {
-            List<String> webPaths = strategy.getWebPaths(resource);
-            paths.addAll(webPaths);
-         }
-         paths.add(null);
-
-         String path = "";
-         while (path != null && !paths.isEmpty())
-         {
-            out.println();
-            path = shell.promptChoiceTyped(
-                     "Create URL-mapping for generated resource?",
-                     paths, paths.get(paths.size() - 1));
-
-            if (path != null)
+            for (DirectoryResource d : web.getWebRootDirectories())
             {
-               ShellMessages.info(shell, "Generating URL-mapping for [" + shell.renderColor(ShellColor.GREEN, path)
-                        + "]");
-               try
+               if (resource != null && resource.getFullyQualifiedName().startsWith(d.getFullyQualifiedName()))
                {
-                  if (shell.promptBoolean("Attempt to map this URL *automagically*?"))
+                  Map<String, AutomapTarget> mappings = new HashMap<String, AutomapTarget>();
+
+                  List<String> webPaths = strategy.getWebPaths(resource);
+                  for (String path : webPaths)
                   {
-                     try
-                     {
-                        autoMap(path);
-                     }
-                     catch (Exception e)
-                     {
-                        ShellMessages.error(shell, e.getMessage());
-                        doMappingEvent(shell, path);
-                     }
+                     mappings.put(path, getAutomapTarget(path));
                   }
-                  else
-                  {
-                     doMappingEvent(shell, path);
-                  }
-                  paths.remove(path);
-               }
-               catch (Exception e)
-               {
-                  ShellMessages.error(shell, e.getMessage());
+                  ResourceMappingRequest request = new ResourceMappingRequest(resource, mappings);
+                  resourceRequests.add(request);
+                  break;
                }
             }
          }
-      }
-   }
 
-   private void doMappingEvent(Shell shell, String path) throws IOException, SAXException
-   {
-      mapUrl(
-               shell.prompt("The URL pattern [e.g: '/login' or '/home']"),
-               path,
-               shell.prompt("The mapping-ID [e.g: 'login' or 'home']"),
-               shell.promptCompleter("The parent mapping-ID [e.g: 'base' or 'home']",
-                        new MappingIdCompleter(project)),
-               true);
+         if (!resourceRequests.isEmpty())
+         {
+            out.println();
+            ShellMessages.info(out, out.renderColor(ShellColor.BOLD, "PrettyFaces detected generated Resources:")
+                     + " This event provides an" +
+                     " opportunity to create URL-mappings for web-accessible resources in your project. If you" +
+                     " do not wish to perform URL-rewriting, then you may skip this step; otherwise, continue" +
+                     " by selecting the resource for which you'd like to generate a \"pretty URL\", and follow" +
+                     " the instructions. For more information, please visit [ http://ocpsoft.com/prettyfaces/ ]");
+
+            resourceRequests.add(null);
+            while (!resourceRequests.isEmpty())
+            {
+               out.println();
+               ResourceMappingRequest request = prompt
+                        .promptChoiceTyped(
+                                       "Select one of the following candidate resources to continue" +
+                                                " (or press " + out.renderColor(ShellColor.ITALIC, "ENTER")
+                                                + " to skip.)",
+                                 resourceRequests, null);
+
+               out.println();
+               if (request != null)
+               {
+                  Resource<?> resource = request.getResource();
+                  ShellMessages.info(out, "Generating URL-mapping for ["
+                                    + out.renderColor(ShellColor.GREEN,
+                                             request.getResource().getName()) + "]");
+                  out.println();
+
+                  Map<String, AutomapTarget> mappings = request.getMappings();
+
+                  List<AutomapTarget> views = new ArrayList<AutomapTarget>();
+                  views.addAll(mappings.values());
+
+                  String message = "Select the pre-configured mapping that most closely matches your" +
+                           " application's needs, or select "
+                           + out.renderColor(ShellColor.BOLD, "\"" + CUSTOM_MAPPING + "\"")
+                           + " to use your own settings.";
+
+                  if (views.size() > 1)
+                  {
+                     message = "This resource is accessible by multiple URLs. " + message;
+                  }
+                  views.add(CUSTOM_MAPPING);
+
+                  AutomapTarget choice = prompt.promptChoiceTyped(message, views, views.get(0));
+
+                  if (CUSTOM_MAPPING.equals(choice))
+                  {
+                     ArrayList<String> viewIds = new ArrayList<String>();
+                     viewIds.addAll(mappings.keySet());
+
+                     out.println();
+                     String viewId = promptChoiceForViewId(resource.getName(), viewIds);
+
+                     out.println();
+                     String pattern = prompt
+                              .prompt("Choose an inbound pattern to use in place of the original URL [e.g: '"
+                                       + out.renderColor(ShellColor.BOLD, "/login") + "' or '"
+                                       + out.renderColor(ShellColor.BOLD, "/item/")
+                                       + out.renderColor(ShellColor.GREEN, "#{id}") + "']."
+                                       + " Note that " + out.renderColor(ShellColor.GREEN, "#{param}")
+                                       + " declarations will convert query-parameters to path-parameters"
+                                       + " (See http://bit.ly/prettyparams for more information):");
+
+                     out.println();
+                     String id = prompt.prompt("The mapping-ID [e.g: 'login' or 'home']"
+                                    + " (See http://bit.ly/prettymapping for more information):");
+
+                     out.println();
+                     String parentId = prompt.promptCompleter(out.renderColor(ShellColor.BOLD, "(OPTIONAL)")
+                              + " The parent mapping-ID [e.g: 'base' or 'home']." +
+                              " Use the URL-mapping with the given ID as this mapping's parent ( See" +
+                              " http://bit.ly/prettyparent for more infromation):", new MappingIdCompleter(project));
+
+                     if (Strings.isNullOrEmpty(id))
+                     {
+                        id = getUniqueMappingId(id);
+                     }
+                     mapUrl(viewId, pattern, id, parentId, true);
+                  }
+                  else
+                  {
+                     mapUrl(choice.getViewId(), choice.getPattern(), choice.getId(), null, true);
+                  }
+                  resourceRequests.remove(request);
+               }
+               else
+               {
+                  break;
+               }
+            }
+
+            ShellMessages.info(out, "To continue customizing URL-mappings, use the 'prettyfaces' command,"
+                     + " or you may 'edit "
+                     + project.getFacet(PrettyFacesFacet.class).getConfigFile().getFullyQualifiedName() + "'."
+                     + " For more information, please visit [ http://ocpsoft.com/prettyfaces/ ]");
+
+         }
+      }
    }
 
    @Command("auto-map")
@@ -149,10 +220,6 @@ public class PrettyFacesPlugin implements Plugin
             @Option(name = "resource", completer = ViewIdCompleter.class, description = "the server resource to be displayed", required = true) String viewId)
             throws IOException, SAXException
    {
-      if (!viewId.startsWith("/"))
-      {
-         viewId = "/" + viewId;
-      }
       // Attempt to convert the view resource into a faces resource
       if (project.hasFacet(FacesFacet.class))
       {
@@ -166,8 +233,8 @@ public class PrettyFacesPlugin implements Plugin
                List<String> webPaths = faces.getWebPaths(viewId);
                if (!webPaths.isEmpty())
                {
-                  if (faces.getResourceForWebPath(webPaths.get(0)) != null)
-                     viewId = webPaths.get(0);
+                  out.println();
+                  viewId = promptChoiceForViewId(viewId, webPaths);
                }
             }
          }
@@ -181,6 +248,17 @@ public class PrettyFacesPlugin implements Plugin
                System.out.println(viewId);
             }
          }
+      }
+
+      AutomapTarget target = getAutomapTarget(viewId);
+      mapUrl(target.getViewId(), target.getPattern(), target.getId(), null, true);
+   }
+
+   private AutomapTarget getAutomapTarget(String viewId)
+   {
+      if (!viewId.startsWith("/"))
+      {
+         viewId = "/" + viewId;
       }
 
       List<String> prefixes = new ArrayList<String>();
@@ -213,28 +291,48 @@ public class PrettyFacesPlugin implements Plugin
             id = id.substring(1);
          }
 
-         PrettyFacesFacet pf = project.getFacet(PrettyFacesFacet.class);
-         PrettyConfig prettyConfig = pf.getPrettyConfig();
-         UrlMapping mapping = prettyConfig.getMappingById(id);
-
-         int i = 1;
-         while (mapping != null)
-         {
-            id = id + i;
-            mapping = prettyConfig.getMappingById(id);
-         }
+         id = getUniqueMappingId(id);
 
          if ("/index".equals(pattern))
          {
             pattern = "/";
          }
-         mapUrl(pattern, viewId, id, null, true);
+         return new AutomapTarget(pattern, viewId, id);
       }
       else
       {
-         throw new RuntimeException("Unable to parse URL scheme. Use 'prettyfaces mapping' to map this URL manually.");
+         return null;
+      }
+   }
+
+   private String getUniqueMappingId(String id)
+   {
+      if (Strings.isNullOrEmpty(id))
+      {
+         id = "automatic";
       }
 
+      PrettyFacesFacet pf = project.getFacet(PrettyFacesFacet.class);
+      PrettyConfig prettyConfig = pf.getPrettyConfig();
+      UrlMapping mapping = prettyConfig.getMappingById(id);
+
+      int i = 1;
+      while (mapping != null)
+      {
+         id = id + i;
+         mapping = prettyConfig.getMappingById(id);
+      }
+      return id;
+   }
+
+   private String promptChoiceForViewId(String originalPath, List<String> accessibleURLs)
+   {
+      originalPath = prompt.promptChoiceTyped(
+               "This resource [" + out.renderColor(ShellColor.BOLD, originalPath)
+                        + "] is accessible by multiple URLs. Select the URL that most closely"
+                        + " matches your application's needs. (See http://bit.ly/prettymapping for more"
+                        + " information):", accessibleURLs, accessibleURLs.get(0));
+      return originalPath;
    }
 
    protected Matcher getMatcher(String viewId, List<String> prefixes)
@@ -253,12 +351,21 @@ public class PrettyFacesPlugin implements Plugin
 
    @Command("mapping")
    public void mapUrl(
-            @Option(name = "pattern", description = "the URL pattern", required = true) String pattern,
-            @Option(name = "viewId", completer = ViewIdCompleter.class, description = "the server resource to be displayed", required = true) String viewId,
-            @Option(name = "id", description = "the mapping id", required = true) String id,
-            @Option(name = "parentId", completer = MappingIdCompleter.class, description = "parent mapping to inherit from") String parentId,
-            @Option(name = "outbound", description = "rewrite outbound URLs matching this viewId", defaultValue = "true") boolean outbound)
-                     throws IOException, SAXException
+            @Option(name = "resource",
+                     completer = ViewIdCompleter.class, description = "The server resource (ViewID) to be displayed"
+                              + " (See http://bit.ly/prettymapping for more information.)", required = true) String viewId,
+            @Option(name = "pattern", description = "the URL pattern [e.g: '/', '/login', or '/view/#{param}']"
+                     + " (See http://bit.ly/prettymapping for more information.)",
+                     required = true) String pattern,
+            @Option(name = "id",
+                     description = "The mapping-ID"
+                              + " (See http://bit.ly/prettymapping for more information.)", required = true) String id,
+            @Option(name = "parentId",
+                     completer = MappingIdCompleter.class, description = "Parent mapping ID to inherit from"
+                              + " (See http://bit.ly/prettyparent for more information.)") String parentId,
+            @Option(name = "outbound", description = "Rewrite outbound URLs matching this viewId?"
+                     + " (See http://bit.ly/disableOutbound for more information.)",
+                     defaultValue = "true") boolean outbound)
    {
       assertInstalled();
 
@@ -303,6 +410,7 @@ public class PrettyFacesPlugin implements Plugin
       pf.saveConfig(config);
 
       UrlMapping newMapping = pf.getPrettyConfig().getMappingById(id);
+      out.println();
       ShellMessages.success(out, out.renderColor(ShellColor.BOLD, newMapping.getPattern())
                + out.renderColor(ShellColor.ITALIC, " -> ") + newMapping.getViewId()
                + " [" + (Strings.isNullOrEmpty(newMapping.getId()) ? "" : "id=" + newMapping.getId() + ", ")
@@ -316,8 +424,7 @@ public class PrettyFacesPlugin implements Plugin
             @Option(name = "mappingId", completer = MappingIdCompleter.class, description = "mapping to which the action will be added", required = true) String mappingId,
             @Option(name = "methodExpression", description = "the EL action method expression (surround with quotes)", required = true) String actionExpression,
             @Option(name = "phaseId", description = "the JSF lifecycle action phase [default: RESTORE_VIEW]") PhaseId phaseId,
-            @Option(name = "onPostback", description = "invoke action on form POST [default: true]", defaultValue = "true") boolean onPostback,
-            boolean inbound) throws IOException, SAXException
+            @Option(name = "onPostback", description = "invoke action on form POST [default: true]", defaultValue = "true") boolean onPostback)
    {
       assertInstalled();
       if (!project.hasFacet(FacesFacet.class))
@@ -360,8 +467,7 @@ public class PrettyFacesPlugin implements Plugin
    @Command("list-mappings")
    public void listMappings(PipeOut out,
             @Option(name = "sort", shortName = "s") boolean sort,
-            @Option(name = "all", shortName = "a") boolean showAll
-            ) throws IOException, SAXException
+            @Option(name = "all", shortName = "a") boolean showAll)
    {
       assertInstalled();
       PrettyFacesFacet pf = project.getFacet(PrettyFacesFacet.class);
@@ -414,9 +520,10 @@ public class PrettyFacesPlugin implements Plugin
       }
    }
 
-   // confirmed working
    @Command("faces-message-propagation")
-   public void multiPageMessagesSupport(PipeOut out, Action action)
+   public void multiPageMessagesSupport(PipeOut out,
+            @Option(description = "Enable or disable multi-page-messages support"
+                     + " (See http://bit.ly/multipage for more information)") Action action)
    {
       assertInstalled();
 
@@ -503,13 +610,9 @@ public class PrettyFacesPlugin implements Plugin
    }
 
    @Command("remove-mapping")
-   public void removeMapping(
-            PipeOut out,
-            @Option(name = "id",
-                     completer = MappingIdCompleter.class,
-                     description = "the mapping id",
-                     required = true) String id
-            ) throws IOException, SAXException
+   public void removeMapping(PipeOut out,
+            @Option(name = "id", completer = MappingIdCompleter.class,
+                     description = "the mapping id to remove from configuration", required = true) String id)
    {
       assertInstalled();
 
@@ -534,8 +637,7 @@ public class PrettyFacesPlugin implements Plugin
       ShellMessages.success(out, "Removed " + mapping);
    }
 
-   // confirmed working
-   @Command("setup")
+   @Command(value = "setup", help = "Install PrettyFaces into the current project.")
    public void setup(PipeOut out)
    {
       if (!project.hasFacet(PrettyFacesFacet.class))

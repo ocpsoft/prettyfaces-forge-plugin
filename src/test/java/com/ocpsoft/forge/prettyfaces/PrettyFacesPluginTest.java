@@ -86,7 +86,7 @@ public class PrettyFacesPluginTest extends AbstractShellTest
    @Test
    public void testRegex() throws Exception
    {
-      PrettyFacesPlugin plugin = new PrettyFacesPlugin(initializeJavaProject(), null, getShell());
+      PrettyFacesPlugin plugin = new PrettyFacesPlugin(initializeJavaProject(), null, getShell(), getShell());
 
       Matcher matcher = plugin.getMatcher("/faces/index.xhtml", new ArrayList<String>());
       assertTrue(matcher.matches());
@@ -112,7 +112,7 @@ public class PrettyFacesPluginTest extends AbstractShellTest
 
       project.installFacet(factory.getFacet(FacesFacet.class));
 
-      PrettyFacesPlugin plugin = new PrettyFacesPlugin(project, null, getShell());
+      PrettyFacesPlugin plugin = new PrettyFacesPlugin(project, null, getShell(), getShell());
 
       WebResourceFacet web = project.getFacet(WebResourceFacet.class);
       FileResource<?> child = (FileResource<?>) web.getWebRootDirectory().getChild("index.xhtml");
