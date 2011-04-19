@@ -23,7 +23,7 @@ import org.jboss.seam.forge.resources.FileResource;
 import org.jboss.seam.forge.resources.Resource;
 import org.jboss.seam.forge.resources.ResourceFilter;
 import org.jboss.seam.forge.scaffold.AccessStrategy;
-import org.jboss.seam.forge.scaffold.plugins.events.ScaffoldGeneratedResources;
+import org.jboss.seam.forge.scaffold.events.ScaffoldGeneratedResources;
 import org.jboss.seam.forge.shell.ShellColor;
 import org.jboss.seam.forge.shell.ShellMessages;
 import org.jboss.seam.forge.shell.ShellPrintWriter;
@@ -36,8 +36,8 @@ import org.jboss.seam.forge.shell.plugins.Option;
 import org.jboss.seam.forge.shell.plugins.PipeOut;
 import org.jboss.seam.forge.shell.plugins.Plugin;
 import org.jboss.seam.forge.shell.plugins.RequiresProject;
-import org.jboss.seam.forge.spec.javaee6.jsf.FacesFacet;
-import org.jboss.seam.forge.spec.javaee6.servlet.ServletFacet;
+import org.jboss.seam.forge.spec.javaee.FacesFacet;
+import org.jboss.seam.forge.spec.javaee.util.ServletUtil;
 import org.jboss.shrinkwrap.descriptor.api.Node;
 import org.jboss.shrinkwrap.descriptor.impl.base.Strings;
 import org.xml.sax.SAXException;
@@ -89,7 +89,7 @@ public class PrettyFacesPlugin implements Plugin
          WebResourceFacet web = project.getFacet(WebResourceFacet.class);
 
          List<Resource<?>> resources = event.getResources();
-         AccessStrategy strategy = event.getProvider().getAccessStrategy(project);
+         AccessStrategy strategy = event.getProvider().getAccessStrategy();
 
          List<ResourceMappingRequest> resourceRequests = new ArrayList<ResourceMappingRequest>();
          for (Resource<?> resource : resources)
@@ -246,7 +246,7 @@ public class PrettyFacesPlugin implements Plugin
          List<String> viewMappings = faces.getFaceletsViewMapping();
          for (String mapping : viewMappings)
          {
-            Matcher matcher = Pattern.compile(ServletFacet.mappingToRegex(mapping)).matcher(viewId);
+            Matcher matcher = ServletUtil.mappingToRegex(mapping).matcher(viewId);
             if (matcher.matches())
             {
                System.out.println(viewId);

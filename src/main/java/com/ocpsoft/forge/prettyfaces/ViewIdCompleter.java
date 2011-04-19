@@ -32,7 +32,7 @@ import org.jboss.seam.forge.resources.DirectoryResource;
 import org.jboss.seam.forge.resources.Resource;
 import org.jboss.seam.forge.resources.ResourceFlag;
 import org.jboss.seam.forge.shell.completer.SimpleTokenCompleter;
-import org.jboss.seam.forge.spec.javaee6.servlet.ServletFacet;
+import org.jboss.seam.forge.spec.javaee.ServletFacet;
 
 /**
  * @author <a href="mailto:lincolnbaxter@gmail.com">Lincoln Baxter, III</a>

@@ -39,7 +39,7 @@ import org.jboss.seam.forge.shell.ShellPrintWriter;
 import org.jboss.seam.forge.shell.ShellPrompt;
 import org.jboss.seam.forge.shell.plugins.Alias;
 import org.jboss.seam.forge.shell.plugins.RequiresFacet;
-import org.jboss.seam.forge.spec.javaee6.servlet.ServletFacet;
+import org.jboss.seam.forge.spec.javaee.ServletFacet;
 import org.jboss.shrinkwrap.descriptor.api.Node;
 import org.jboss.shrinkwrap.descriptor.api.spec.servlet.web.FilterDef;
 import org.jboss.shrinkwrap.descriptor.api.spec.servlet.web.FilterMappingDef;

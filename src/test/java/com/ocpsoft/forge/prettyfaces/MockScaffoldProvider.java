@@ -21,20 +21,21 @@
  */
 package com.ocpsoft.forge.prettyfaces;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.jboss.seam.forge.parser.java.JavaClass;
-import org.jboss.seam.forge.project.Project;
+import org.jboss.seam.forge.project.facets.BaseFacet;
 import org.jboss.seam.forge.resources.Resource;
 import org.jboss.seam.forge.scaffold.AccessStrategy;
 import org.jboss.seam.forge.scaffold.ScaffoldProvider;
-import org.jboss.seam.forge.spec.javaee6.jsf.FacesFacet;
+import org.jboss.seam.forge.spec.javaee.FacesFacet;
 
 /**
  * @author <a href="mailto:lincolnbaxter@gmail.com">Lincoln Baxter, III</a>
  * 
  */
-public class MockScaffoldProvider implements ScaffoldProvider
+public class MockScaffoldProvider extends BaseFacet implements ScaffoldProvider
 {
    private final FacesFacet facesFacet;
 
@@ -44,31 +45,31 @@ public class MockScaffoldProvider implements ScaffoldProvider
    }
 
    @Override
-   public List<Resource<?>> generateFromEntity(Project project, JavaClass entity, boolean overwrite)
+   public List<Resource<?>> generateFromEntity(JavaClass entity, boolean overwrite)
    {
       throw new IllegalStateException("Stub!");
    }
 
    @Override
-   public List<Resource<?>> generateIndex(Project project, boolean overwrite)
+   public List<Resource<?>> generateIndex(boolean overwrite)
    {
       throw new IllegalStateException("Stub!");
    }
 
    @Override
-   public List<Resource<?>> getGeneratedResources(Project project)
+   public List<Resource<?>> getGeneratedResources()
    {
       throw new IllegalStateException("Stub!");
    }
 
    @Override
-   public List<Resource<?>> generateTemplates(Project project, boolean overwrite)
+   public List<Resource<?>> generateTemplates(boolean overwrite)
    {
       throw new IllegalStateException("Stub!");
    }
 
    @Override
-   public AccessStrategy getAccessStrategy(Project project)
+   public AccessStrategy getAccessStrategy()
    {
       return new AccessStrategy()
       {
@@ -88,15 +89,21 @@ public class MockScaffoldProvider implements ScaffoldProvider
    }
 
    @Override
-   public List<Resource<?>> install(Project project)
+   public List<Resource<?>> setup(boolean overwrite)
    {
-      throw new IllegalStateException("Stub!");
+      return new ArrayList<Resource<?>>();
    }
 
    @Override
-   public boolean installed(Project project)
+   public boolean install()
    {
-      throw new IllegalStateException("Stub!");
+      return true;
+   }
+
+   @Override
+   public boolean isInstalled()
+   {
+      return true;
    }
 
 }

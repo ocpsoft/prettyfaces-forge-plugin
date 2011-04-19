@@ -29,16 +29,17 @@
 		</dependency>
 		<dependency>
 			<groupId>org.jboss.seam.forge</groupId>
-			<artifactId>forge-scaffold</artifactId>
+			<artifactId>forge-scaffold-api</artifactId>
 			<version>${forge.api.version}</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.jboss.seam.forge</groupId>
-			<artifactId>forge-javaee-6.0-plugins</artifactId>
+			<artifactId>forge-javaee-api</artifactId>
 			<version>${forge.api.version}</version>
 			<scope>provided</scope>
 		</dependency>
+		
 		<dependency>
 			<groupId>org.jboss.seam.forge</groupId>
 			<artifactId>forge-test-harness</artifactId>
@@ -48,6 +49,12 @@
 		<dependency>
 			<groupId>org.jboss.seam.forge</groupId>
 			<artifactId>forge-shell</artifactId>
+			<version>${forge.api.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.jboss.seam.forge</groupId>
+			<artifactId>forge-javaee-impl</artifactId>
 			<version>${forge.api.version}</version>
 			<scope>test</scope>
 		</dependency>
