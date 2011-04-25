@@ -26,13 +26,13 @@ import java.util.List;
 
 import javax.inject.Inject;
 
-import org.jboss.seam.forge.project.Project;
-import org.jboss.seam.forge.project.facets.WebResourceFacet;
-import org.jboss.seam.forge.resources.DirectoryResource;
-import org.jboss.seam.forge.resources.Resource;
-import org.jboss.seam.forge.resources.ResourceFlag;
-import org.jboss.seam.forge.shell.completer.SimpleTokenCompleter;
-import org.jboss.seam.forge.spec.javaee.ServletFacet;
+import org.jboss.forge.project.Project;
+import org.jboss.forge.project.facets.WebResourceFacet;
+import org.jboss.forge.resources.DirectoryResource;
+import org.jboss.forge.resources.Resource;
+import org.jboss.forge.resources.ResourceFlag;
+import org.jboss.forge.shell.completer.SimpleTokenCompleter;
+import org.jboss.forge.spec.javaee.ServletFacet;
 
 /**
  * @author <a href="mailto:lincolnbaxter@gmail.com">Lincoln Baxter, III</a>

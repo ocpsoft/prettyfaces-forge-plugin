@@ -23,7 +23,7 @@ package com.ocpsoft.forge.prettyfaces;
 
 import java.util.Map;
 
-import org.jboss.seam.forge.resources.Resource;
+import org.jboss.forge.resources.Resource;
 
 /**
  * @author <a href="mailto:lincolnbaxter@gmail.com">Lincoln Baxter, III</a>

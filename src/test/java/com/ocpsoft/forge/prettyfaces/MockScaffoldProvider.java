@@ -24,12 +24,12 @@ package com.ocpsoft.forge.prettyfaces;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.jboss.seam.forge.parser.java.JavaClass;
-import org.jboss.seam.forge.project.facets.BaseFacet;
-import org.jboss.seam.forge.resources.Resource;
-import org.jboss.seam.forge.scaffold.AccessStrategy;
-import org.jboss.seam.forge.scaffold.ScaffoldProvider;
-import org.jboss.seam.forge.spec.javaee.FacesFacet;
+import org.jboss.forge.parser.java.JavaClass;
+import org.jboss.forge.project.facets.BaseFacet;
+import org.jboss.forge.resources.Resource;
+import org.jboss.forge.scaffold.AccessStrategy;
+import org.jboss.forge.scaffold.ScaffoldProvider;
+import org.jboss.forge.spec.javaee.FacesFacet;
 
 /**
  * @author <a href="mailto:lincolnbaxter@gmail.com">Lincoln Baxter, III</a>

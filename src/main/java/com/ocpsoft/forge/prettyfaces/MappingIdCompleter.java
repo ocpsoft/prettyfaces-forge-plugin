@@ -26,8 +26,8 @@ import java.util.List;
 
 import javax.inject.Inject;
 
-import org.jboss.seam.forge.project.Project;
-import org.jboss.seam.forge.shell.completer.SimpleTokenCompleter;
+import org.jboss.forge.project.Project;
+import org.jboss.forge.shell.completer.SimpleTokenCompleter;
 
 import com.ocpsoft.pretty.faces.config.PrettyConfig;
 import com.ocpsoft.pretty.faces.config.mapping.UrlMapping;
