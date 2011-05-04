@@ -40,9 +40,9 @@ import org.jboss.forge.shell.ShellPrompt;
 import org.jboss.forge.shell.plugins.Alias;
 import org.jboss.forge.shell.plugins.RequiresFacet;
 import org.jboss.forge.spec.javaee.ServletFacet;
-import org.jboss.shrinkwrap.descriptor.api.Node;
 import org.jboss.shrinkwrap.descriptor.api.spec.servlet.web.FilterDef;
 import org.jboss.shrinkwrap.descriptor.api.spec.servlet.web.FilterMappingDef;
+import org.jboss.shrinkwrap.descriptor.spi.Node;
 import org.xml.sax.SAXException;
 
 import com.ocpsoft.pretty.PrettyException;
@@ -90,7 +90,7 @@ public class PrettyFacesFacet extends BaseFacet
       }
 
       Dependency existing = deps.getDependency(dep);
-      if (existing != null
+      if ((existing != null)
                && prompt.promptBoolean("Existing PrettyFaces dependency was found. Replace [" + existing + "] with ["
                         + dep + "]?"))
       {
@@ -102,7 +102,7 @@ public class PrettyFacesFacet extends BaseFacet
       {
          ServletFacet servletFacet = project.getFacet(ServletFacet.class);
          String servlet = servletFacet.getConfig().getVersion();
-         if (servlet != null && servlet.trim().startsWith("2"))
+         if ((servlet != null) && servlet.trim().startsWith("2"))
          {
             // servlet version does not support auto-registration of the filter. do it for them
             FilterDef filter = servletFacet.getConfig().filter(PrettyFilter.class);
@@ -144,7 +144,7 @@ public class PrettyFacesFacet extends BaseFacet
       return XMLParser.parse(getConfigFile().getResourceInputStream());
    }
 
-   public void saveConfig(Node config)
+   public void saveConfig(final Node config)
    {
       getConfigFile().setContents(XMLParser.toXMLInputStream(config));
    }
@@ -168,7 +168,7 @@ public class PrettyFacesFacet extends BaseFacet
       }
    }
 
-   public Node newConfig(String version)
+   public Node newConfig(final String version)
    {
       return new Node("pretty-config")
                .attribute("xmlns", "http://ocpsoft.com/prettyfaces/" + version)

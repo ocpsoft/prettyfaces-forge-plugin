@@ -38,8 +38,8 @@ import org.jboss.forge.shell.plugins.Plugin;
 import org.jboss.forge.shell.plugins.RequiresProject;
 import org.jboss.forge.spec.javaee.FacesFacet;
 import org.jboss.forge.spec.javaee.util.ServletUtil;
-import org.jboss.shrinkwrap.descriptor.api.Node;
 import org.jboss.shrinkwrap.descriptor.impl.base.Strings;
+import org.jboss.shrinkwrap.descriptor.spi.Node;
 import org.xml.sax.SAXException;
 
 import com.ocpsoft.pretty.faces.annotation.URLAction.PhaseId;
@@ -61,7 +61,8 @@ public class PrettyFacesPlugin implements Plugin
    private final ShellPrompt prompt;
 
    @Inject
-   public PrettyFacesPlugin(Project project, Event<InstallFacets> event, ShellPrintWriter writer, ShellPrompt prompt)
+   public PrettyFacesPlugin(final Project project, final Event<InstallFacets> event, final ShellPrintWriter writer,
+            final ShellPrompt prompt)
    {
       this.project = project;
       this.installFacets = event;
@@ -70,7 +71,7 @@ public class PrettyFacesPlugin implements Plugin
    }
 
    @DefaultCommand
-   public void status(PipeOut out)
+   public void status(final PipeOut out)
    {
       if (project.hasFacet(PrettyFacesFacet.class))
       {
@@ -82,7 +83,7 @@ public class PrettyFacesPlugin implements Plugin
       }
    }
 
-   public void handleScaffoldGeneration(@Observes ScaffoldGeneratedResources event)
+   public void handleScaffoldGeneration(@Observes final ScaffoldGeneratedResources event)
    {
       if (project.hasFacet(PrettyFacesFacet.class))
       {
@@ -96,7 +97,7 @@ public class PrettyFacesPlugin implements Plugin
          {
             for (DirectoryResource d : web.getWebRootDirectories())
             {
-               if (resource != null && resource.getFullyQualifiedName().startsWith(d.getFullyQualifiedName()))
+               if ((resource != null) && resource.getFullyQualifiedName().startsWith(d.getFullyQualifiedName()))
                {
                   Map<String, AutomapTarget> mappings = new HashMap<String, AutomapTarget>();
 
@@ -273,9 +274,9 @@ public class PrettyFacesPlugin implements Plugin
          ResourceFilter filter = new ResourceFilter()
          {
             @Override
-            public boolean accept(Resource<?> resource)
+            public boolean accept(final Resource<?> resource)
             {
-               return resource instanceof DirectoryResource && resource.exists();
+               return (resource instanceof DirectoryResource) && resource.exists();
             }
          };
 
@@ -329,7 +330,7 @@ public class PrettyFacesPlugin implements Plugin
       return id;
    }
 
-   private String promptChoiceForViewId(String originalPath, List<String> accessibleURLs)
+   private String promptChoiceForViewId(String originalPath, final List<String> accessibleURLs)
    {
       originalPath = prompt.promptChoiceTyped(
                "This resource [" + out.renderColor(ShellColor.BOLD, originalPath)
@@ -339,7 +340,7 @@ public class PrettyFacesPlugin implements Plugin
       return originalPath;
    }
 
-   protected Matcher getMatcher(String viewId, List<String> prefixes)
+   protected Matcher getMatcher(final String viewId, final List<String> prefixes)
    {
       String prefixList = Strings.join(prefixes, "|/");
       if (!prefixes.isEmpty())
@@ -357,19 +358,19 @@ public class PrettyFacesPlugin implements Plugin
    public void mapUrl(
             @Option(name = "resource",
                      completer = ViewIdCompleter.class, description = "The server resource (ViewID) to be displayed"
-                              + " (See http://bit.ly/prettymapping for more information.)", required = true) String viewId,
+                              + " (See http://bit.ly/prettymapping for more information.)", required = true) final String viewId,
             @Option(name = "pattern", description = "the URL pattern [e.g: '/', '/login', or '/view/#{param}']"
                      + " (See http://bit.ly/prettymapping for more information.)",
-                     required = true) String pattern,
+                     required = true) final String pattern,
             @Option(name = "id",
                      description = "The mapping-ID"
-                              + " (See http://bit.ly/prettymapping for more information.)", required = true) String id,
+                              + " (See http://bit.ly/prettymapping for more information.)", required = true) final String id,
             @Option(name = "parentId",
                      completer = MappingIdCompleter.class, description = "Parent mapping ID to inherit from"
-                              + " (See http://bit.ly/prettyparent for more information.)") String parentId,
+                              + " (See http://bit.ly/prettyparent for more information.)") final String parentId,
             @Option(name = "outbound", description = "Rewrite outbound URLs matching this viewId?"
                      + " (See http://bit.ly/disableOutbound for more information.)",
-                     defaultValue = "true") boolean outbound)
+                     defaultValue = "true") final boolean outbound)
    {
       assertInstalled();
 
@@ -398,7 +399,7 @@ public class PrettyFacesPlugin implements Plugin
       m.create("pattern").attribute("value", pattern);
       m.create("view-id").attribute("value", viewId);
 
-      if (parentId != null && !parentId.trim().isEmpty())
+      if ((parentId != null) && !parentId.trim().isEmpty())
       {
          UrlMapping parent = prettyConfig.getMappingById(parentId);
          if (parent == null)
@@ -424,11 +425,11 @@ public class PrettyFacesPlugin implements Plugin
 
    @Command("action")
    public void mapUrlAction(
-            PipeOut out,
-            @Option(name = "mappingId", completer = MappingIdCompleter.class, description = "mapping to which the action will be added", required = true) String mappingId,
-            @Option(name = "methodExpression", description = "the EL action method expression (surround with quotes)", required = true) String actionExpression,
-            @Option(name = "phaseId", description = "the JSF lifecycle action phase [default: RESTORE_VIEW]") PhaseId phaseId,
-            @Option(name = "onPostback", description = "invoke action on form POST [default: true]", defaultValue = "true") boolean onPostback)
+            final PipeOut out,
+            @Option(name = "mappingId", completer = MappingIdCompleter.class, description = "mapping to which the action will be added", required = true) final String mappingId,
+            @Option(name = "methodExpression", description = "the EL action method expression (surround with quotes)", required = true) final String actionExpression,
+            @Option(name = "phaseId", description = "the JSF lifecycle action phase [default: RESTORE_VIEW]") final PhaseId phaseId,
+            @Option(name = "onPostback", description = "invoke action on form POST [default: true]", defaultValue = "true") final boolean onPostback)
    {
       assertInstalled();
       if (!project.hasFacet(FacesFacet.class))
@@ -469,9 +470,9 @@ public class PrettyFacesPlugin implements Plugin
    }
 
    @Command("list-mappings")
-   public void listMappings(PipeOut out,
-            @Option(name = "sort", shortName = "s") boolean sort,
-            @Option(name = "all", shortName = "a") boolean showAll)
+   public void listMappings(final PipeOut out,
+            @Option(name = "sort", shortName = "s") final boolean sort,
+            @Option(name = "all", shortName = "a") final boolean showAll)
    {
       assertInstalled();
       PrettyFacesFacet pf = project.getFacet(PrettyFacesFacet.class);
@@ -485,9 +486,9 @@ public class PrettyFacesPlugin implements Plugin
          Collections.sort(mappings, new Comparator<UrlMapping>()
          {
             @Override
-            public int compare(UrlMapping l, UrlMapping r)
+            public int compare(final UrlMapping l, final UrlMapping r)
             {
-               if (l.getPattern() == null || r.getPattern() == null)
+               if ((l.getPattern() == null) || (r.getPattern() == null))
                {
                   if (l.getPattern() != null)
                      return -1;
@@ -525,9 +526,9 @@ public class PrettyFacesPlugin implements Plugin
    }
 
    @Command("faces-message-propagation")
-   public void multiPageMessagesSupport(PipeOut out,
+   public void multiPageMessagesSupport(final PipeOut out,
             @Option(description = "Enable or disable multi-page-messages support"
-                     + " (See http://bit.ly/multipage for more information)") Action action)
+                     + " (See http://bit.ly/multipage for more information)") final Action action)
    {
       assertInstalled();
 
@@ -614,9 +615,9 @@ public class PrettyFacesPlugin implements Plugin
    }
 
    @Command("remove-mapping")
-   public void removeMapping(PipeOut out,
+   public void removeMapping(final PipeOut out,
             @Option(name = "id", completer = MappingIdCompleter.class,
-                     description = "the mapping id to remove from configuration", required = true) String id)
+                     description = "the mapping id to remove from configuration", required = true) final String id)
    {
       assertInstalled();
 
@@ -642,7 +643,7 @@ public class PrettyFacesPlugin implements Plugin
    }
 
    @Command(value = "setup", help = "Install PrettyFaces into the current project.")
-   public void setup(PipeOut out)
+   public void setup(final PipeOut out)
    {
       if (!project.hasFacet(PrettyFacesFacet.class))
          installFacets.fire(new InstallFacets(PrettyFacesFacet.class));
