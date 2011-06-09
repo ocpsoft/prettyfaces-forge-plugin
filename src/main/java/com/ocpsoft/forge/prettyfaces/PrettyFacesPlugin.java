@@ -16,8 +16,9 @@ import javax.inject.Inject;
 
 import org.jboss.forge.parser.xml.XMLParser;
 import org.jboss.forge.project.Project;
-import org.jboss.forge.project.facets.FacetInstallationAborted;
+import org.jboss.forge.project.facets.FacetActionAborted;
 import org.jboss.forge.project.facets.WebResourceFacet;
+import org.jboss.forge.project.facets.events.InstallFacets;
 import org.jboss.forge.resources.DirectoryResource;
 import org.jboss.forge.resources.FileResource;
 import org.jboss.forge.resources.Resource;
@@ -28,7 +29,6 @@ import org.jboss.forge.shell.ShellColor;
 import org.jboss.forge.shell.ShellMessages;
 import org.jboss.forge.shell.ShellPrintWriter;
 import org.jboss.forge.shell.ShellPrompt;
-import org.jboss.forge.shell.events.InstallFacets;
 import org.jboss.forge.shell.plugins.Alias;
 import org.jboss.forge.shell.plugins.Command;
 import org.jboss.forge.shell.plugins.DefaultCommand;
@@ -187,7 +187,7 @@ public class PrettyFacesPlugin implements Plugin
                      String parentId = prompt.promptCompleter(out.renderColor(ShellColor.BOLD, "(OPTIONAL)")
                               + " The parent mapping-ID [e.g: 'base' or 'home']." +
                               " Use the URL-mapping with the given ID as this mapping's parent ( See" +
-                              " http://bit.ly/prettyparent for more infromation):", new MappingIdCompleter(project));
+                              " http://bit.ly/prettyparent for more infromation):", MappingIdCompleter.class);
 
                      if (Strings.isNullOrEmpty(id))
                      {
@@ -565,7 +565,7 @@ public class PrettyFacesPlugin implements Plugin
             }
             ShellMessages.success(out, "MultiPageMessagesListener is installed.");
          }
-         catch (FacetInstallationAborted e)
+         catch (FacetActionAborted e)
          {
          }
 
