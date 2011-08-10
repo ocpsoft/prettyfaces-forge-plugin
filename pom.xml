@@ -64,6 +64,10 @@
 			<id>JBOSS_NEXUS</id>
 			<url>http://repository.jboss.org/nexus/content/groups/public</url>
 		</repository>
+		<repository>
+			<id>OCPSoft</id>
+			<url>http://ocpsoft.com/repository/</url>
+		</repository>
 	</repositories>
 	<build>
 		<plugins>
