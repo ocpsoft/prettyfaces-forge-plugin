@@ -28,6 +28,7 @@ import java.util.List;
 import javax.inject.Inject;
 import javax.servlet.DispatcherType;
 
+import org.jboss.forge.parser.xml.Node;
 import org.jboss.forge.parser.xml.XMLParser;
 import org.jboss.forge.project.dependencies.Dependency;
 import org.jboss.forge.project.dependencies.DependencyResolver;
@@ -42,7 +43,6 @@ import org.jboss.forge.shell.plugins.RequiresFacet;
 import org.jboss.forge.spec.javaee.ServletFacet;
 import org.jboss.shrinkwrap.descriptor.api.spec.servlet.web.FilterDef;
 import org.jboss.shrinkwrap.descriptor.api.spec.servlet.web.FilterMappingDef;
-import org.jboss.shrinkwrap.descriptor.spi.Node;
 import org.xml.sax.SAXException;
 
 import com.ocpsoft.pretty.PrettyException;

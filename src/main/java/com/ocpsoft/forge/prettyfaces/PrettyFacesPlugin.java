@@ -14,6 +14,8 @@ import javax.enterprise.event.Event;
 import javax.enterprise.event.Observes;
 import javax.inject.Inject;
 
+import org.jboss.forge.parser.java.util.Strings;
+import org.jboss.forge.parser.xml.Node;
 import org.jboss.forge.parser.xml.XMLParser;
 import org.jboss.forge.project.Project;
 import org.jboss.forge.project.facets.FacetActionAborted;
@@ -35,11 +37,10 @@ import org.jboss.forge.shell.plugins.DefaultCommand;
 import org.jboss.forge.shell.plugins.Option;
 import org.jboss.forge.shell.plugins.PipeOut;
 import org.jboss.forge.shell.plugins.Plugin;
-import org.jboss.forge.shell.plugins.RequiresProject;
+import org.jboss.forge.shell.plugins.RequiresFacet;
+import org.jboss.forge.shell.plugins.SetupCommand;
 import org.jboss.forge.spec.javaee.FacesFacet;
 import org.jboss.forge.spec.javaee.util.ServletUtil;
-import org.jboss.shrinkwrap.descriptor.impl.base.Strings;
-import org.jboss.shrinkwrap.descriptor.spi.Node;
 import org.xml.sax.SAXException;
 
 import com.ocpsoft.pretty.faces.annotation.URLAction.PhaseId;
@@ -50,7 +51,7 @@ import com.ocpsoft.pretty.faces.event.MultiPageMessagesSupport;
 import com.ocpsoft.pretty.faces.url.URL;
 import com.ocpsoft.pretty.faces.url.URLPatternParser;
 
-@RequiresProject
+@RequiresFacet(PrettyFacesFacet.class)
 @Alias("prettyfaces")
 public class PrettyFacesPlugin implements Plugin
 {
@@ -129,9 +130,9 @@ public class PrettyFacesPlugin implements Plugin
                out.println();
                ResourceMappingRequest request = prompt
                         .promptChoiceTyped(
-                                       "Select one of the following candidate resources to continue" +
-                                                " (or press " + out.renderColor(ShellColor.ITALIC, "ENTER")
-                                                + " to skip.)",
+                                 "Select one of the following candidate resources to continue" +
+                                          " (or press " + out.renderColor(ShellColor.ITALIC, "ENTER")
+                                          + " to skip.)",
                                  resourceRequests, null);
 
                out.println();
@@ -139,8 +140,8 @@ public class PrettyFacesPlugin implements Plugin
                {
                   Resource<?> resource = request.getResource();
                   ShellMessages.info(out, "Generating URL-mapping for ["
-                                    + out.renderColor(ShellColor.GREEN,
-                                             request.getResource().getName()) + "]");
+                           + out.renderColor(ShellColor.GREEN,
+                                    request.getResource().getName()) + "]");
                   out.println();
 
                   Map<String, AutomapTarget> mappings = request.getMappings();
@@ -181,7 +182,7 @@ public class PrettyFacesPlugin implements Plugin
 
                      out.println();
                      String id = prompt.prompt("The mapping-ID [e.g: 'login' or 'home']"
-                                    + " (See http://bit.ly/prettymapping for more information):");
+                              + " (See http://bit.ly/prettymapping for more information):");
 
                      out.println();
                      String parentId = prompt.promptCompleter(out.renderColor(ShellColor.BOLD, "(OPTIONAL)")
@@ -388,7 +389,7 @@ public class PrettyFacesPlugin implements Plugin
       }
 
       Node config = pf.getConfig();
-      Node m = config.create("url-mapping");
+      Node m = config.createChild("url-mapping");
 
       if (id != null)
          m.attribute("id", id);
@@ -396,8 +397,8 @@ public class PrettyFacesPlugin implements Plugin
       if (outbound == false)
          m.attribute("outbound", outbound);
 
-      m.create("pattern").attribute("value", pattern);
-      m.create("view-id").attribute("value", viewId);
+      m.createChild("pattern").attribute("value", pattern);
+      m.createChild("view-id").attribute("value", viewId);
 
       if ((parentId != null) && !parentId.trim().isEmpty())
       {
@@ -452,7 +453,7 @@ public class PrettyFacesPlugin implements Plugin
 
       Node config = pf.getConfig();
       Node mapping = config.getSingle("url-mapping@id=" + mappingId);
-      Node action = mapping.create("action").text(actionExpression);
+      Node action = mapping.createChild("action").text(actionExpression);
       if (onPostback == false)
       {
          action.attribute("onPostback", onPostback);
@@ -552,7 +553,7 @@ public class PrettyFacesPlugin implements Plugin
             Node messagesListener = null;
             for (Node n : list)
             {
-               if (MultiPageMessagesSupport.class.getName().equals(n.text()))
+               if (MultiPageMessagesSupport.class.getName().equals(n.getText()))
                {
                   messagesListener = n;
                }
@@ -560,14 +561,14 @@ public class PrettyFacesPlugin implements Plugin
 
             if (messagesListener == null)
             {
-               messagesListener = lifecycle.create("phase-listener").text(MultiPageMessagesSupport.class.getName());
+               messagesListener = lifecycle.createChild("phase-listener")
+                        .text(MultiPageMessagesSupport.class.getName());
                facesConfigFile.setContents(XMLParser.toXMLString(facesConfig));
             }
             ShellMessages.success(out, "MultiPageMessagesListener is installed.");
          }
          catch (FacetActionAborted e)
-         {
-         }
+         {}
 
          break;
       case REMOVE:
@@ -585,7 +586,7 @@ public class PrettyFacesPlugin implements Plugin
                Node messagesListener = null;
                for (Node n : list)
                {
-                  if (MultiPageMessagesSupport.class.getName().equals(n.text()))
+                  if (MultiPageMessagesSupport.class.getName().equals(n.getText()))
                   {
                      messagesListener = n;
                   }
@@ -593,10 +594,10 @@ public class PrettyFacesPlugin implements Plugin
 
                if (messagesListener != null)
                {
-                  lifecycle.removeSingle(messagesListener);
-                  if (lifecycle.children().isEmpty())
+                  lifecycle.removeChild(messagesListener);
+                  if (lifecycle.getChildren().isEmpty())
                   {
-                     facesConfig.removeSingle(lifecycle);
+                     facesConfig.removeChild(lifecycle);
                   }
                   facesConfigFile.setContents(XMLParser.toXMLString(facesConfig));
                   ShellMessages.success(out, "Removed MultiPageMessagesListener.");
@@ -632,7 +633,7 @@ public class PrettyFacesPlugin implements Plugin
       }
 
       Node config = pf.getConfig();
-      Node m = config.removeSingle("url-mapping@id=" + id);
+      Node m = config.removeChild("url-mapping@id=" + id);
       if (m == null)
       {
          throw new RuntimeException("Could not remove " + mapping);
@@ -642,7 +643,7 @@ public class PrettyFacesPlugin implements Plugin
       ShellMessages.success(out, "Removed " + mapping);
    }
 
-   @Command(value = "setup", help = "Install PrettyFaces into the current project.")
+   @SetupCommand(help = "Install PrettyFaces into the current project.")
    public void setup(final PipeOut out)
    {
       if (!project.hasFacet(PrettyFacesFacet.class))

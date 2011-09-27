@@ -21,7 +21,6 @@
  */
 package com.ocpsoft.forge.prettyfaces;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.jboss.forge.parser.java.JavaClass;
@@ -29,6 +28,7 @@ import org.jboss.forge.project.facets.BaseFacet;
 import org.jboss.forge.resources.Resource;
 import org.jboss.forge.scaffold.AccessStrategy;
 import org.jboss.forge.scaffold.ScaffoldProvider;
+import org.jboss.forge.scaffold.TemplateStrategy;
 import org.jboss.forge.spec.javaee.FacesFacet;
 
 /**
@@ -42,18 +42,6 @@ public class MockScaffoldProvider extends BaseFacet implements ScaffoldProvider
    public MockScaffoldProvider(FacesFacet facet)
    {
       this.facesFacet = facet;
-   }
-
-   @Override
-   public List<Resource<?>> generateFromEntity(JavaClass entity, boolean overwrite)
-   {
-      throw new IllegalStateException("Stub!");
-   }
-
-   @Override
-   public List<Resource<?>> generateIndex(boolean overwrite)
-   {
-      throw new IllegalStateException("Stub!");
    }
 
    @Override
@@ -89,12 +77,6 @@ public class MockScaffoldProvider extends BaseFacet implements ScaffoldProvider
    }
 
    @Override
-   public List<Resource<?>> setup(boolean overwrite)
-   {
-      return new ArrayList<Resource<?>>();
-   }
-
-   @Override
    public boolean install()
    {
       return true;
@@ -104,6 +86,30 @@ public class MockScaffoldProvider extends BaseFacet implements ScaffoldProvider
    public boolean isInstalled()
    {
       return true;
+   }
+
+   @Override
+   public List<Resource<?>> setup(Resource<?> template, boolean overwrite)
+   {
+      throw new IllegalStateException("Stub!");
+   }
+
+   @Override
+   public List<Resource<?>> generateIndex(Resource<?> template, boolean overwrite)
+   {
+      throw new IllegalStateException("Stub!");
+   }
+
+   @Override
+   public List<Resource<?>> generateFromEntity(Resource<?> template, JavaClass entity, boolean overwrite)
+   {
+      throw new IllegalStateException("Stub!");
+   }
+
+   @Override
+   public TemplateStrategy getTemplateStrategy()
+   {
+      throw new IllegalStateException("Stub!");
    }
 
 }
