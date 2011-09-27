@@ -51,8 +51,8 @@ import com.ocpsoft.pretty.faces.event.MultiPageMessagesSupport;
 import com.ocpsoft.pretty.faces.url.URL;
 import com.ocpsoft.pretty.faces.url.URLPatternParser;
 
-@RequiresFacet(PrettyFacesFacet.class)
 @Alias("prettyfaces")
+@RequiresFacet(PrettyFacesFacet.class)
 public class PrettyFacesPlugin implements Plugin
 {
    private static final AutomapTarget CUSTOM_MAPPING = new AutomapTarget("custom", "?", null);
