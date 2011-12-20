@@ -89,14 +89,14 @@ public class PrettyFacesFacet extends BaseFacet
          prettyConfig.setContents(XMLParser.toXMLString(newConfig(dep.getVersion())));
       }
 
-      Dependency existing = deps.getDependency(dep);
+      Dependency existing = deps.getEffectiveDependency(dep);
       if ((existing != null)
                && prompt.promptBoolean("Existing PrettyFaces dependency was found. Replace [" + existing + "] with ["
                         + dep + "]?"))
       {
          deps.removeDependency(existing);
       }
-      deps.addDependency(dep);
+      deps.addDirectDependency(dep);
 
       if (project.hasFacet(ServletFacet.class))
       {
@@ -130,7 +130,7 @@ public class PrettyFacesFacet extends BaseFacet
       {
          for (PrettyFacesBranch version : PrettyFacesBranch.values())
          {
-            if (deps.hasDependency(version.getDependency()))
+            if (deps.hasEffectiveDependency(version.getDependency()))
             {
                return true;
             }
