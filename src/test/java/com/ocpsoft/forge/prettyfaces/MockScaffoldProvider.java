@@ -45,13 +45,13 @@ public class MockScaffoldProvider extends BaseFacet implements ScaffoldProvider
    }
 
    @Override
-   public List<Resource<?>> getGeneratedResources()
+   public List<Resource<?>> getGeneratedResources(String targetDir)
    {
       throw new IllegalStateException("Stub!");
    }
 
    @Override
-   public List<Resource<?>> generateTemplates(boolean overwrite)
+   public List<Resource<?>> generateTemplates(String targetDir, boolean overwrite)
    {
       throw new IllegalStateException("Stub!");
    }
@@ -89,19 +89,19 @@ public class MockScaffoldProvider extends BaseFacet implements ScaffoldProvider
    }
 
    @Override
-   public List<Resource<?>> setup(Resource<?> template, boolean overwrite)
+   public List<Resource<?>> setup(String targetDir, Resource<?> template, boolean overwrite)
    {
       throw new IllegalStateException("Stub!");
    }
 
    @Override
-   public List<Resource<?>> generateIndex(Resource<?> template, boolean overwrite)
+   public List<Resource<?>> generateIndex(String targetDir, Resource<?> template, boolean overwrite)
    {
       throw new IllegalStateException("Stub!");
    }
 
    @Override
-   public List<Resource<?>> generateFromEntity(Resource<?> template, JavaClass entity,
+   public List<Resource<?>> generateFromEntity(String targetDir, Resource<?> template, JavaClass entity,
             boolean overwrite)
    {
       throw new IllegalStateException("Stub!");

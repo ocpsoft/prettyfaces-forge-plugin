@@ -26,7 +26,7 @@ import org.jboss.forge.project.dependencies.DependencyBuilder;
 
 /**
  * @author <a href="mailto:lincolnbaxter@gmail.com">Lincoln Baxter, III</a>
- *
+ * 
  */
 public enum PrettyFacesBranch
 {
