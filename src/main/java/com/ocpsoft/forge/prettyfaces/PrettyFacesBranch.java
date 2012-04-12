@@ -26,14 +26,15 @@ import org.jboss.forge.project.dependencies.DependencyBuilder;
 
 /**
  * @author <a href="mailto:lincolnbaxter@gmail.com">Lincoln Baxter, III</a>
- * 
+ *
  */
 public enum PrettyFacesBranch
 {
    JSF_1_1("JSF 1.1 and Servlet <= 2.3", DependencyBuilder.create("com.ocpsoft:prettyfaces-jsf11")),
    JSF_1_2("JSF 1.2 and Servlet >= 2.4", DependencyBuilder.create("com.ocpsoft:prettyfaces-jsf12")),
    JSF_2_0("JSF 2.0 and Servlet >= 2.5", DependencyBuilder.create("com.ocpsoft:prettyfaces-jsf2")),
-   SERVLET_3("Java EE 6 and Servlet >= 3.0", DependencyBuilder.create("com.ocpsoft:prettyfaces-jsf2"));
+   SERVLET_3("Java EE 6 and Servlet >= 3.0", DependencyBuilder.create("com.ocpsoft:prettyfaces-jsf2")),
+   PF4("Java EE 6 and Servlet >= 3.0 [experimental]", DependencyBuilder.create("org.ocpsoft:prettyfaces"));
 
    private Dependency dependency;
    private String name;

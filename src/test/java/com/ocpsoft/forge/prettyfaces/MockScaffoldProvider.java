@@ -33,7 +33,7 @@ import org.jboss.forge.spec.javaee.FacesFacet;
 
 /**
  * @author <a href="mailto:lincolnbaxter@gmail.com">Lincoln Baxter, III</a>
- * 
+ *
  */
 public class MockScaffoldProvider extends BaseFacet implements ScaffoldProvider
 {
@@ -101,7 +101,8 @@ public class MockScaffoldProvider extends BaseFacet implements ScaffoldProvider
    }
 
    @Override
-   public List<Resource<?>> generateFromEntity(Resource<?> template, JavaClass entity, boolean overwrite)
+   public List<Resource<?>> generateFromEntity(Resource<?> template, JavaClass entity,
+            boolean overwrite)
    {
       throw new IllegalStateException("Stub!");
    }
